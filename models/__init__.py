@@ -1,3 +1,5 @@
+import torch
+import torch_directml
 from model import self_net
 from unet import UNet
 from unetplusplus import UNetplusplus
@@ -23,8 +25,15 @@ def load_model(model_name, n_channels, num_classes):
         model = UNet3plus(n_channels, num_classes)
     elif model_name == "UNetV2":
         model = UNetV2(n_channels, num_classes)
-
     else:
         raise ValueError("Invalid model name")
+
+    try:
+        if torch.cuda.is_available():
+            model = model.to(device=torch.device("cuda"))
+        else:
+            model = model.to(device=torch_directml.device())
+    except:
+        pass
 
     return model
