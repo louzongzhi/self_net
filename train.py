@@ -63,8 +63,15 @@ def train_model(
         anonymous='must'
     )
     experiment.config.update(
-        dict(epochs=epochs, batch_size=batch_size, learning_rate=learning_rate,
-             val_percent=val_percent, save_checkpoint=save_checkpoint, img_scale=img_scale, amp=amp)
+        dict(
+            epochs=epochs,
+            batch_size=batch_size,
+            learning_rate=learning_rate,
+            val_percent=val_percent,
+            save_checkpoint=save_checkpoint,
+            img_scale=img_scale,
+            amp=amp
+        )
     )
 
     logging.info(
@@ -149,7 +156,7 @@ def train_model(
 
                         best_score = 0
                         dice_score, accuracy_scores, iou_scores, pixel_accuracies, f1_scores = evaluate(model, val_loader, device, amp)
-                        val_score = np.mean(iou_scores)
+                        val_score = iou_scores
                         scheduler.step(val_score)
 
                         logging.info('Validation Dice score: {}'.format(val_score))
