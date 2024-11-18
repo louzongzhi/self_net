@@ -28,8 +28,10 @@ dir_mask = Path('./data/masks/')
 dir_mask_train = os.path.join(dir_mask, 'train')
 dir_mask_val = os.path.join(dir_mask, 'val')
 dir_checkpoint = Path('./checkpoints/')
-dir_checkpoint_history = Path('./checkpoints/history/')
-dir_checkpoint_best = Path('./checkpoints/best/')
+dir_checkpoint_history = os.path.join(dir_checkpoint, 'history')
+os.mkdir(dir_checkpoint_history, exist_ok=True)
+dir_checkpoint_best = os.path.join(dir_checkpoint, 'best')
+os.mkdir(dir_checkpoint_best, exist_ok=True)
 
 
 def train_model(
