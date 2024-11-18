@@ -11,6 +11,8 @@ import numpy as np
 import os
 import pandas as pd
 from torchvision.io import read_image
+from models import load_model
+
 
 class CustomImageDataset(Dataset):
     def __init__(self, mask_dir, img_dir, transform=None, target_transform=None):
@@ -56,7 +58,7 @@ validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=4, sh
 print('Training set has {} instances'.format(len(training_set)))
 print('Validation set has {} instances'.format(len(validation_set)))
 
-model = ''
+model = load_model('self_net', n_channels=3, num_classes=4)
 # model.load_state_dict(torch.load('model_weights.pth', weights_only=True))
 
 loss_fn = torch.nn.CrossEntropyLoss()
