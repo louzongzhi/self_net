@@ -83,10 +83,4 @@ def evaluate(net, dataloader, device, amp):
     f1_scores = torch.tensor(f1_scores).mean().item()
 
     net.train()
-    return {
-        'dice_score': dice_score,
-        'accuracy_scores': accuracy_scores,
-        'iou_scores': iou_scores,
-        'pixel_accuracies': pixel_accuracies.tolist(),
-        'f1_scores': f1_scores,
-    }
+    return dice_score, accuracy_scores, iou_scores, pixel_accuracies.tolist(), f1_scores
