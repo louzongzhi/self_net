@@ -97,6 +97,7 @@ def train_model(
     grad_scaler = torch.cuda.amp.GradScaler(enabled=amp)
     criterion = nn.CrossEntropyLoss() if model.n_classes > 1 else nn.BCEWithLogitsLoss()
     global_step = 0
+    best_score = 0
 
     for epoch in range(1, epochs + 1):
         model.train()
@@ -154,7 +155,6 @@ def train_model(
                             if not (torch.isinf(value.grad) | torch.isnan(value.grad)).any():
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
-                        best_score = 0
                         dice_score, accuracy_scores, iou_scores, pixel_accuracies, f1_scores = evaluate(model, val_loader, device, amp)
                         val_score = iou_scores
                         scheduler.step(val_score)
