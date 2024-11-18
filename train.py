@@ -192,17 +192,14 @@ def train_model(
 
 def get_args():
     parser = argparse.ArgumentParser(description='Train the UNet on images and target masks')
-    parser.add_argument('--epochs', '-e', metavar='E', type=int, default=5, help='Number of epochs')
-    parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=1, help='Batch size')
-    parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=1e-5,
-                        help='Learning rate', dest='lr')
+    parser.add_argument('--epochs', '-e', metavar='E', type=int, default=360, help='Number of epochs')
+    parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=32, help='Batch size')
+    parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=1e-4, help='Learning rate', dest='lr')
     parser.add_argument('--load', '-f', type=str, default=False, help='Load model from a .pth file')
-    parser.add_argument('--scale', '-s', type=float, default=0.5, help='Downscaling factor of the images')
-    parser.add_argument('--validation', '-v', dest='val', type=float, default=10.0,
-                        help='Percent of the data that is used as validation (0-100)')
+    parser.add_argument('--scale', '-s', type=float, default=1, help='Downscaling factor of the images')
+    parser.add_argument('--validation', '-v', dest='val', type=float, default=10.0, help='Percent of the data that is used as validation (0-100)')
     parser.add_argument('--amp', action='store_true', default=False, help='Use mixed precision')
-    parser.add_argument('--bilinear', action='store_true', default=False, help='Use bilinear upsampling')
-    parser.add_argument('--classes', '-c', type=int, default=2, help='Number of classes')
+    parser.add_argument('--classes', '-c', type=int, default=4, help='Number of classes')
 
     return parser.parse_args()
 
@@ -223,14 +220,13 @@ if __name__ == '__main__':
         args.device = torch.device('cpu')
     logging.info(f'Using device {device}')
 
-    model = load_model(model_name='self_net', n_channels=3, n_classes=args.classes, bilinear=args.bilinear)
+    model = load_model(model_name='self_net', n_channels=3, n_classes=args.classes)
     model = model.to(memory_format=torch.channels_last)
 
     logging.info(
         f'Network:\n'
         f'\t{model.n_channels} input channels\n'
         f'\t{model.n_classes} output channels (classes)\n'
-        f'\t{"Bilinear" if model.bilinear else "Transposed conv"} upscaling'
     )
 
     if args.load:
@@ -251,9 +247,11 @@ if __name__ == '__main__':
             amp=args.amp
         )
     except torch.cuda.OutOfMemoryError:
-        logging.error('Detected OutOfMemoryError! '
-                      'Enabling checkpointing to reduce memory usage, but this slows down training. '
-                      'Consider enabling AMP (--amp) for fast and memory efficient training')
+        logging.error(
+            'Detected OutOfMemoryError! '
+            'Enabling checkpointing to reduce memory usage, but this slows down training. '
+            'Consider enabling AMP (--amp) for fast and memory efficient training'
+        )
         torch.cuda.empty_cache()
         model.use_checkpointing()
         train_model(
