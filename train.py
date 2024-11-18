@@ -47,8 +47,8 @@ img_dir_val = os.path.join(img_dir, 'val')
 mask_dir_train = os.path.join(mask_dir, 'train')
 mask_dir_val = os.path.join(mask_dir, 'val')
 
-training_set = CustomImageDataset(img_dir='./data/images', mask_dir='./data/masks', transform=transform, target_transform=transform)
-validation_set = CustomImageDataset(img_dir='./data/images', mask_dir='./data/masks', transform=transform, target_transform=transform)
+training_set = CustomImageDataset(img_dir=img_dir_train, mask_dir=mask_dir_train, transform=transform, target_transform=transform)
+validation_set = CustomImageDataset(img_dir=img_dir_val, mask_dir=mask_dir_val, transform=transform, target_transform=transform)
 
 # Create data loaders for our datasets; shuffle for training, not for validation
 training_loader = torch.utils.data.DataLoader(training_set, batch_size=4, shuffle=True)
