@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
+import torch_directml
 import wandb
 from pathlib import Path
 from torch import optim
@@ -210,23 +211,30 @@ if __name__ == '__main__':
     args = get_args()
 
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    try:
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+            logging.info(f'Using GPU {torch.cuda.get_device_name(0)}')
+        else:
+            device = torch_directml.device()
+            logging.info(f'Using DirectML')
+    except Exception as e:
+        logging.info(f'Could not use GPU with error {e}')
+        args.device = torch.device('cpu')
     logging.info(f'Using device {device}')
 
-    # Change here to adapt to your data
-    # n_channels=3 for RGB images
-    # n_classes is the number of probabilities you want to get per pixel
     model = load_model(model_name='self_net', n_channels=3, n_classes=args.classes, bilinear=args.bilinear)
     model = model.to(memory_format=torch.channels_last)
 
-    logging.info(f'Network:\n'
-                 f'\t{model.n_channels} input channels\n'
-                 f'\t{model.n_classes} output channels (classes)\n'
-                 f'\t{"Bilinear" if model.bilinear else "Transposed conv"} upscaling')
+    logging.info(
+        f'Network:\n'
+        f'\t{model.n_channels} input channels\n'
+        f'\t{model.n_classes} output channels (classes)\n'
+        f'\t{"Bilinear" if model.bilinear else "Transposed conv"} upscaling'
+    )
 
     if args.load:
         state_dict = torch.load(args.load, map_location=device)
-        del state_dict['mask_values']
         model.load_state_dict(state_dict)
         logging.info(f'Model loaded from {args.load}')
 
