@@ -223,10 +223,11 @@ if __name__ == '__main__':
             logging.info(f'Using DirectML')
     except Exception as e:
         logging.info(f'Could not use GPU with error {e}')
-        args.device = torch.device('cpu')
+        device = torch.device('cpu')
     logging.info(f'Using device {device}')
 
     model = load_model(model_name='UNet', n_channels=3, num_classes=args.classes)
+    model = model.to(device=device)
     model = model.to(memory_format=torch.channels_last)
 
     logging.info(
