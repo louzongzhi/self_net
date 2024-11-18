@@ -159,9 +159,8 @@ def train_model(
                         val_score = iou_scores
                         scheduler.step(val_score)
 
-                        logging.info('Validation Dice score: {}'.format(val_score))
+                        logging.info('Validation score: {}'.format(val_score))
                         logging.info('Validation accuracy: {}'.format(accuracy_scores))
-                        logging.info('Validation IoU: {}'.format(iou_scores))
                         logging.info('Validation pixel accuracy: {}'.format(pixel_accuracies))
                         logging.info('Validation F1 score: {}'.format(f1_scores))
                         try:
