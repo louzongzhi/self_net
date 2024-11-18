@@ -3,6 +3,7 @@ import logging
 import os
 import random
 import sys
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -20,7 +21,11 @@ from data_loading import BasicDataset, CarvanaDataset
 from dice_score import dice_loss
 
 dir_img = Path('./data/imgs/')
+dir_img_train = os.path.join(dir_img, 'train')
+dir_img_val = os.path.join(dir_img, 'val')
 dir_mask = Path('./data/masks/')
+dir_mask_train = os.path.join(dir_mask, 'train')
+dir_mask_val = os.path.join(dir_mask, 'val')
 dir_checkpoint = Path('./checkpoints/')
 dir_checkpoint_history = Path('./checkpoints/history/')
 dir_checkpoint_best = Path('./checkpoints/best/')
@@ -40,54 +45,55 @@ def train_model(
         momentum: float = 0.999,
         gradient_clipping: float = 1.0,
 ):
-    # 1. Create dataset
     try:
-        dataset = CarvanaDataset(dir_img, dir_mask, img_scale)
+        dataset_train = CarvanaDataset(dir_img_train, dir_mask_train, img_scale)
+        dataset_val = CarvanaDataset(dir_img_val, dir_mask_val, img_scale)
     except (AssertionError, RuntimeError, IndexError):
-        dataset = BasicDataset(dir_img, dir_mask, img_scale)
+        dataset_train = BasicDataset(dir_img_train, dir_mask_train, img_scale)
+        dataset_val = BasicDataset(dir_img_val, dir_mask_val, img_scale)
 
-    # 2. Split into train / validation partitions
-    n_val = int(len(dataset) * val_percent)
-    n_train = len(dataset) - n_val
-    train_set, val_set = random_split(dataset, [n_train, n_val], generator=torch.Generator().manual_seed(0))
-
-    # 3. Create data loaders
     loader_args = dict(batch_size=batch_size, num_workers=os.cpu_count(), pin_memory=True)
-    train_loader = DataLoader(train_set, shuffle=True, **loader_args)
-    val_loader = DataLoader(val_set, shuffle=False, drop_last=True, **loader_args)
+    train_loader = DataLoader(dataset_train, shuffle=True, **loader_args)
+    val_loader = DataLoader(dataset_val, shuffle=False, drop_last=True, **loader_args)
 
-    # (Initialize logging)
-    experiment = wandb.init(project='U-Net', resume='allow', anonymous='must')
+    experiment = wandb.init(
+        project='钢材表面缺陷检测与分割',
+        resume='allow',
+        anonymous='must'
+    )
     experiment.config.update(
         dict(epochs=epochs, batch_size=batch_size, learning_rate=learning_rate,
              val_percent=val_percent, save_checkpoint=save_checkpoint, img_scale=img_scale, amp=amp)
     )
 
-    logging.info(f'''Starting training:
+    logging.info(
+        f'''Starting training:
         Epochs:          {epochs}
         Batch size:      {batch_size}
         Learning rate:   {learning_rate}
-        Training size:   {n_train}
-        Validation size: {n_val}
         Checkpoints:     {save_checkpoint}
         Device:          {device.type}
         Images scaling:  {img_scale}
         Mixed Precision: {amp}
-    ''')
+        '''
+    )
 
-    # 4. Set up the optimizer, the loss, the learning rate scheduler and the loss scaling for AMP
-    optimizer = optim.RMSprop(model.parameters(),
-                              lr=learning_rate, weight_decay=weight_decay, momentum=momentum, foreach=True)
+    optimizer = optim.Adam(
+        model.parameters(),
+        lr=learning_rate,
+        weight_decay=weight_decay,
+        # momentum=momentum,
+        foreach=True
+    )
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)  # goal: maximize Dice score
     grad_scaler = torch.cuda.amp.GradScaler(enabled=amp)
     criterion = nn.CrossEntropyLoss() if model.n_classes > 1 else nn.BCEWithLogitsLoss()
     global_step = 0
 
-    # 5. Begin training
     for epoch in range(1, epochs + 1):
         model.train()
         epoch_loss = 0
-        with tqdm(total=n_train, desc=f'Epoch {epoch}/{epochs}', unit='img') as pbar:
+        with tqdm(total=len(dataset_train), desc=f'Epoch {epoch}/{epochs}', unit='img') as pbar:
             for batch in train_loader:
                 images, true_masks = batch['image'], batch['mask']
 
@@ -129,8 +135,7 @@ def train_model(
                 })
                 pbar.set_postfix(**{'loss (batch)': loss.item()})
 
-                # Evaluation round
-                division_step = (n_train // (5 * batch_size))
+                division_step = (len(dataset_train) // (5 * batch_size))
                 if division_step > 0:
                     if global_step % division_step == 0:
                         histograms = {}
@@ -141,14 +146,24 @@ def train_model(
                             if not (torch.isinf(value.grad) | torch.isnan(value.grad)).any():
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
-                        val_score = evaluate(model, val_loader, device, amp)
+                        best_score = 0
+                        dice_score, accuracy_scores, iou_scores, pixel_accuracies, f1_scores = evaluate(model, val_loader, device, amp)
+                        val_score = np.mean(iou_scores)
                         scheduler.step(val_score)
 
                         logging.info('Validation Dice score: {}'.format(val_score))
+                        logging.info('Validation accuracy: {}'.format(accuracy_scores))
+                        logging.info('Validation IoU: {}'.format(iou_scores))
+                        logging.info('Validation pixel accuracy: {}'.format(pixel_accuracies))
+                        logging.info('Validation F1 score: {}'.format(f1_scores))
                         try:
                             experiment.log({
                                 'learning rate': optimizer.param_groups[0]['lr'],
-                                'validation Dice': val_score,
+                                'validation Dice': dice_score,
+                                'accuracy': accuracy_scores,
+                                'iou': iou_scores,
+                                'pixel_accuracy': pixel_accuracies,
+                                'f1': f1_scores,
                                 'images': wandb.Image(images[0].cpu()),
                                 'masks': {
                                     'true': wandb.Image(true_masks[0].float().cpu()),
@@ -158,14 +173,19 @@ def train_model(
                                 'epoch': epoch,
                                 **histograms
                             })
+
+                            with open(dir_checkpoint / 'runs.csv', 'a') as f:
+                                f.write(f"{epoch},{dice_score},{accuracy_scores},{iou_scores},{pixel_accuracies},{f1_scores}\n")
                         except:
                             pass
 
         if save_checkpoint:
             Path(dir_checkpoint).mkdir(parents=True, exist_ok=True)
-            state_dict = model.state_dict()
-            state_dict['mask_values'] = dataset.mask_values
-            torch.save(state_dict, str(dir_checkpoint / 'checkpoint_epoch{}.pth'.format(epoch)))
+            torch.save(model.state_dict(), f'{dir_checkpoint_history}/checkpoint_{epoch}.pth')
+            if val_score > best_score:
+                best_score = val_score
+                torch.save(model.state_dict(), f'{dir_checkpoint_best}/model.pth')
+                logging.info(f'Best checkpoint {epoch} saved!')
             logging.info(f'Checkpoint {epoch} saved!')
 
 
@@ -196,7 +216,7 @@ if __name__ == '__main__':
     # Change here to adapt to your data
     # n_channels=3 for RGB images
     # n_classes is the number of probabilities you want to get per pixel
-    model = UNet(n_channels=3, n_classes=args.classes, bilinear=args.bilinear)
+    model = load_model(model_name='self_net', n_channels=3, n_classes=args.classes, bilinear=args.bilinear)
     model = model.to(memory_format=torch.channels_last)
 
     logging.info(f'Network:\n'
