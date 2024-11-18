@@ -69,6 +69,7 @@ class self_net(nn.Module):
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.bilinear = bilinear
+        self.deep_supervision = deep_supervision
         channels = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
 
         self.inc = (DoubleConv(n_channels, channels[0]))
