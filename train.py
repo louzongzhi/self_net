@@ -226,7 +226,7 @@ if __name__ == '__main__':
         args.device = torch.device('cpu')
     logging.info(f'Using device {device}')
 
-    model = load_model(model_name='self_net', n_channels=3, n_classes=args.classes)
+    model = load_model(model_name='UNet', n_channels=3, n_classes=args.classes)
     model = model.to(memory_format=torch.channels_last)
 
     logging.info(
