@@ -8,12 +8,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
+import wandb
 from pathlib import Path
 from torch import optim
 from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 
-import wandb
 from evaluate import evaluate
 from models import load_model
 from data_loading import BasicDataset, CarvanaDataset
