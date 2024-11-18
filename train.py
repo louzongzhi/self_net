@@ -2,19 +2,51 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
+from torch.utils.data import DataLoader, Dataset
 import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+import pandas as pd
+from torchvision.io import read_image
 
+class CustomImageDataset(Dataset):
+    def __init__(self, mask_dir, img_dir, transform=None, target_transform=None):
+        self.img_labels = mask_dir
+        self.img_dir = img_dir
+        self.transform = transform
+        self.target_transform = target_transform
 
-transform = transforms.Compose(
-    [transforms.ToTensor()])
+    def __len__(self):
+        return len(self.img_labels)
+
+    def __getitem__(self, idx):
+        img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+        image = read_image(img_path)
+        label = self.img_labels.iloc[idx, 1]
+        if self.transform:
+            image = self.transform(image)
+        if self.target_transform:
+            label = self.target_transform(label)
+
+        return image, label
+
+transform = transforms.Compose([
+    transforms.ToTensor()
+])
 
 # Create datasets for training & validation, download if necessary
-training_set = torchvision.datasets.FashionMNIST('./data', train=True, transform=transform, download=True)
-validation_set = torchvision.datasets.FashionMNIST('./data', train=False, transform=transform, download=True)
+img_dir = './data/images'
+mask_dir = './data/masks'
+img_dir_train = os.path.join(img_dir, 'train')
+img_dir_val = os.path.join(img_dir, 'val')
+mask_dir_train = os.path.join(mask_dir, 'train')
+mask_dir_val = os.path.join(mask_dir, 'val')
+
+training_set = CustomImageDataset(img_dir='./data/images', mask_dir='./data/masks', transform=transform, target_transform=transform)
+validation_set = CustomImageDataset(img_dir='./data/images', mask_dir='./data/masks', transform=transform, target_transform=transform)
 
 # Create data loaders for our datasets; shuffle for training, not for validation
 training_loader = torch.utils.data.DataLoader(training_set, batch_size=4, shuffle=True)
