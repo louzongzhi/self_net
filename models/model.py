@@ -64,7 +64,7 @@ class OutConv(nn.Module):
 
 
 class self_net(nn.Module):
-    def __init__(self, n_channels, n_classes, bilinear=False):
+    def __init__(self, n_channels, n_classes, bilinear=False, deep_supervision=False):
         super(self_net, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
@@ -101,31 +101,30 @@ class self_net(nn.Module):
         self.outc = OutConv(channels[0] // factor, n_classes, kernel_size=1)
 
     def forward(self, x):
-        x = self.inc(x)
-        x0 = x
-        x1 = self.down1(x0)
-        x2 = self.down2(x1)
-        x3 = self.down3(x2)
-        x4 = self.down4(x3)
-        x5 = self.down5(x4)
-        x6 = self.down6(x5)
-        x7 = self.down7(x6)
-        x8 = self.down8(x7)
-        x9 = self.down9(x8)
-        x10 = self.down10(x9)
-        x11 = self.down11(x10)
+        x_0 = self.inc(x)
+        x_1 = self.down1(x_0)
+        x_2 = self.down2(x_1)
+        x_3 = self.down3(x_2)
+        x_4 = self.down4(x_3)
+        x_5 = self.down5(x_4)
+        x_6 = self.down6(x_5)
+        x_7 = self.down7(x_6)
+        x_8 = self.down8(x_7)
+        x_9 = self.down9(x_8)
+        x_10 = self.down10(x_9)
+        x_11 = self.down11(x_10)
 
-        x = self.up1(x11, x10)
-        x = self.up2(x, x9)
-        x = self.up3(x, x8)
-        x = self.up4(x, x7)
-        x = self.up5(x, x6)
-        x = self.up6(x, x5)
-        x = self.up7(x, x4)
-        x = self.up8(x, x3)
-        x = self.up9(x, x2)
-        x = self.up10(x, x1)
-        x = self.up11(x, x0)
+        x = self.up1(x_11, x_10)
+        x = self.up2(x, x_9)
+        x = self.up3(x, x_8)
+        x = self.up4(x, x_7)
+        x = self.up5(x, x_6)
+        x = self.up6(x, x_5)
+        x = self.up7(x, x_4)
+        x = self.up8(x, x_3)
+        x = self.up9(x, x_2)
+        x = self.up10(x, x_1)
+        x = self.up11(x, x_0)
 
         logits = self.outc(x)
         return logits
