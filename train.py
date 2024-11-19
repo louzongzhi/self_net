@@ -9,8 +9,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
-import torch_directml
+# import torch_directml
 import wandb
+import warnings
 from pathlib import Path
 from torch import optim
 from torch.utils.data import DataLoader, random_split
@@ -21,17 +22,31 @@ from models import load_model
 from data_loading import BasicDataset, CarvanaDataset
 from dice_score import dice_loss
 
-dir_img = Path('./data/imgs/')
-dir_img_train = os.path.join(dir_img, 'train')
-dir_img_val = os.path.join(dir_img, 'val')
-dir_mask = Path('./data/masks/')
-dir_mask_train = os.path.join(dir_mask, 'train')
-dir_mask_val = os.path.join(dir_mask, 'val')
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("ignore", category=ImportWarning)
+warnings.filterwarnings("ignore", category=SyntaxWarning)
+warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+warnings.filterwarnings("ignore", category=SyntaxWarning)
+
+
+dir_img = Path('neu_seg/images')
+dir_img_train = os.path.join(dir_img, 'training')
+dir_img_val = os.path.join(dir_img, 'test')
+dir_mask = Path('neu_seg/annotations')
+dir_mask_train = os.path.join(dir_mask, 'training')
+dir_mask_val = os.path.join(dir_mask, 'test')
 dir_checkpoint = Path('./checkpoints/')
+if not os.path.exists(dir_checkpoint):
+    os.makedirs(dir_checkpoint)
 dir_checkpoint_history = os.path.join(dir_checkpoint, 'history')
-os.mkdir(dir_checkpoint_history, exist_ok=True)
+if not os.path.exists(dir_checkpoint_history):
+    os.mkdir(dir_checkpoint_history)
 dir_checkpoint_best = os.path.join(dir_checkpoint, 'best')
-os.mkdir(dir_checkpoint_best, exist_ok=True)
+if not os.path.exists(dir_checkpoint_best):
+    os.mkdir(dir_checkpoint_best)
 
 
 def train_model(
@@ -200,8 +215,8 @@ def train_model(
 
 def get_args():
     parser = argparse.ArgumentParser(description='Train the UNet on images and target masks')
-    parser.add_argument('--epochs', '-e', metavar='E', type=int, default=360, help='Number of epochs')
-    parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=32, help='Batch size')
+    parser.add_argument('--epochs', '-e', metavar='E', type=int, default=200, help='Number of epochs')
+    parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=1, help='Batch size')
     parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=1e-4, help='Learning rate', dest='lr')
     parser.add_argument('--load', '-f', type=str, default=False, help='Load model from a .pth file')
     parser.add_argument('--scale', '-s', type=float, default=1, help='Downscaling factor of the images')

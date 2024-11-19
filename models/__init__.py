@@ -1,15 +1,13 @@
-from model import self_net
-from unet import UNet
-from unetplusplus import UNetplusplus
-from unet3plus import UNet3plus
-from unetv2 import UNetV2
+from .model import self_net
+from .unet import UNet
+from .unetplusplus import UNetplusplus
+from .unet3plus import UNet3plus
 
 __all__ = [
     "self_net",
     "UNet",
     "UNetplusplus",
     "UNet3plus",
-    "UNetV2",
 ]
 
 def load_model(model_name, n_channels, num_classes):
@@ -21,8 +19,6 @@ def load_model(model_name, n_channels, num_classes):
         model = UNetplusplus(input_channels=n_channels, num_classes=num_classes)
     elif model_name == "UNet3plus":
         model = UNet3plus(in_channels=n_channels, n_classes=num_classes)
-    elif model_name == "UNetV2":
-        model = UNetV2(n_classes=num_classes)
     else:
         raise ValueError("Invalid model name")
     return model
