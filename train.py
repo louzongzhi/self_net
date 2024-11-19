@@ -32,10 +32,10 @@ warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 
-dir_img = Path('neu_seg/images')
+dir_img = Path('NEU_Seg/images')
 dir_img_train = os.path.join(dir_img, 'training')
 dir_img_val = os.path.join(dir_img, 'test')
-dir_mask = Path('neu_seg/annotations')
+dir_mask = Path('NEU_Seg/annotations')
 dir_mask_train = os.path.join(dir_mask, 'training')
 dir_mask_val = os.path.join(dir_mask, 'test')
 dir_checkpoint = Path('./checkpoints/')
@@ -216,7 +216,7 @@ def train_model(
 def get_args():
     parser = argparse.ArgumentParser(description='Train the UNet on images and target masks')
     parser.add_argument('--epochs', '-e', metavar='E', type=int, default=200, help='Number of epochs')
-    parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=1, help='Batch size')
+    parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=32, help='Batch size')
     parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=1e-4, help='Learning rate', dest='lr')
     parser.add_argument('--load', '-f', type=str, default=False, help='Load model from a .pth file')
     parser.add_argument('--scale', '-s', type=float, default=1, help='Downscaling factor of the images')
