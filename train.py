@@ -1,20 +1,15 @@
 import argparse
 import logging
 import os
-import random
-import sys
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision.transforms as transforms
-import torchvision.transforms.functional as TF
-# import torch_directml
+import torch_directml
 import wandb
 import warnings
 from pathlib import Path
 from torch import optim
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from evaluate import evaluate
@@ -198,7 +193,17 @@ def train_model(
                                 **histograms
                             })
 
-                            with open(dir_checkpoint / 'runs.csv', 'a') as f:
+                            # 指定文件路径
+                            file_path = dir_checkpoint / 'runs.csv'
+
+                            # 检查文件是否存在
+                            if not os.path.exists(file_path):
+                                # 文件不存在，则创建文件并写入标题行（可选）
+                                with open(file_path, 'w') as f:
+                                    f.write("epoch,dice_score,accuracy_scores,iou_scores,pixel_accuracies,f1_scores\n")
+
+                            # 现在文件已经存在，可以追加内容
+                            with open(file_path, 'a') as f:
                                 f.write(f"{epoch},{dice_score},{accuracy_scores},{iou_scores},{pixel_accuracies},{f1_scores}\n")
                         except:
                             pass
