@@ -210,7 +210,7 @@ def train_model(
             logging.info(f'\nmiou:\t{val_score}\nBest\tcheckpoint\t{epoch}\tsaved!\n')
 
         if epoch - best_epoch > 10:
-            print(f"Early\tstopping!\n{epoch}\nBest\tmiou:\t{best_score}\n")
+            print(f"\nepoch:\t{epoch}\nmiou:\t{best_score}\n")
             break
 
 
