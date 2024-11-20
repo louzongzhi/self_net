@@ -206,6 +206,7 @@ def train_model(
             best_score = val_score
             torch.save(model.state_dict(), f'{dir_checkpoint_best}/model.pth')
             logging.info(f'\nmiou:\t{val_score}\nBest\tcheckpoint\t{epoch}\tsaved!\n')
+
         if epoch - best_epoch > 10:
             print(f"Early\tstopping!\n{epoch}\nBest\tmiou:\t{best_score}\n")
             break
@@ -242,9 +243,14 @@ if __name__ == '__main__':
         device = torch.device('cpu')
     logging.info(f'Using device {device}')
 
-    model = load_model(model_name='UNet', n_channels=3, num_classes=args.classes)
-    model = model.to(device=device)
-    model = model.to(memory_format=torch.channels_last)
+    model = load_model(
+        model_name='UNet',
+        n_channels=3,
+        num_classes=args.classes
+    ).to(
+        device=device,
+        memory_format=torch.channels_last
+    )
 
     logging.info(
         f'Network:\n'
