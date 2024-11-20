@@ -168,13 +168,6 @@ def train_model(
                         results = evaluate(model, val_loader, device, amp)
                         iou_scores = results['IoU']
                         miou = results['MIoU']
-                        pa = results['PA']
-                        cpa_scores = results['CPA']
-                        mpa = results['MPA']
-                        accuracy = results['Accuracy']
-                        precision = results['Precision']
-                        recall = results['Recall']
-                        f1_score = results['F1-Score']
 
                         iou_class0, iou_class1, iou_class2, iou_class3 = iou_scores[:4]  # 假设有4个类别
                         val_score = miou
@@ -202,10 +195,10 @@ def train_model(
                             file_path = os.path.join(dir_checkpoint, 'runs.csv')
                             if not os.path.exists(file_path):
                                 with open(file_path, 'w') as f:
-                                    f.write("epoch,iou_class0,iou_class1,iou_class2,iou_class3,miou,pa,cpa,mpa,accuracy,precision,recall,f1_score\n")
+                                    f.write("epoch,iou_class0,iou_class1,iou_class2,iou_class3,miou\n")
 
                             with open(file_path, 'a') as f:
-                                f.write(f"{epoch},{iou_class0},{iou_class1},{iou_class2},{iou_class3},{miou},{pa},{cpa_scores},{mpa},{accuracy},{precision},{recall},{f1_score}\n")
+                                f.write(f"{epoch},{iou_class0},{iou_class1},{iou_class2},{iou_class3},{miou}\n")
                         except NameError as e:
                             print(f"An error occurred: {e}")
 
