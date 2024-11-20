@@ -165,7 +165,7 @@ def train_model(
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
                         dice_score, accuracy_scores, iou_scores, pixel_accuracies, f1_scores = evaluate(model, val_loader, device, amp)
-                        val_score = f1_scores
+                        val_score = iou_scores
                         scheduler.step(val_score)
                         try:
                             experiment.log({
@@ -189,6 +189,7 @@ def train_model(
                             if not os.path.exists(file_path):
                                 with open(file_path, 'w') as f:
                                     f.write("epoch,dice_score,accuracy_scores,iou_scores,pixel_accuracies,f1_scores\n")
+
                             with open(file_path, 'a') as f:
                                 f.write(f"{epoch},{dice_score},{accuracy_scores},{iou_scores},{pixel_accuracies},{f1_scores}\n")
 
