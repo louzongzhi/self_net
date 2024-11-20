@@ -204,14 +204,9 @@ def train_model(
 
         best_epoch = 0
         if val_score > best_score:
-            best_epoch = epoch
             best_score = val_score
             torch.save(state_dict, f'{dir_checkpoint_best}/model.pth')
             logging.info(f'\nmiou:\t{val_score}\nBest\tcheckpoint\t{epoch}\tsaved!\n')
-
-        if epoch - best_epoch > 10:
-            print(f"\nepoch:\t{epoch}\nmiou:\t{best_score}\n")
-            break
 
 
 def get_args():
