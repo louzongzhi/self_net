@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from.parts.conv import ACConv2d, space_to_depth
+from parts.conv import ACConv2d, space_to_depth
 
 
 class DoubleConv(nn.Module):
@@ -102,7 +102,7 @@ class self_net(nn.Module):
         self.up10 = (Up(channels[2], channels[1] // factor, bilinear))
         self.up11 = (Up(channels[1], channels[0] // factor, bilinear))
 
-        self.outc = OutConv(channels[0] // factor, n_classes, kernel_size=1)
+        self.outc = OutConv(channels[0] // factor, n_classes)
 
     def forward(self, x):
         x_0 = self.inc(x)
@@ -132,3 +132,8 @@ class self_net(nn.Module):
 
         logits = self.outc(x)
         return logits
+
+
+if __name__ == '__main__':
+    model = self_net(3, 4, bilinear=False)
+    print(f'{sum(p.numel() for p in model.parameters() if p.requires_grad)/1e6}\tM')
