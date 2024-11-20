@@ -165,7 +165,7 @@ def train_model(
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
                         dice_score, accuracy_scores, iou_scores, pixel_accuracies, f1_scores = evaluate(model, val_loader, device, amp)
-                        val_score = iou_scores
+                        val_score = f1_scores
                         scheduler.step(val_score)
                         try:
                             experiment.log({
