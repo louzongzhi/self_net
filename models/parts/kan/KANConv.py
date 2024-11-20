@@ -1,9 +1,9 @@
 import torch
 import math
 import sys
-sys.path.append('models/parts/kan/')
-from models.parts.kan.KANLinear import KANLinear
-import models.parts.kan.convolution as convolution
+sys.path.append('../models/parts/kan/')
+from .KANLinear import KANLinear
+from .parts import *
 
 
 #Script que contiene la implementación del kernel con funciones de activación.
@@ -85,7 +85,7 @@ class KAN_Convolutional_Layer(torch.nn.Module):
         # If there are multiple convolutions, apply them all
         self.device = x.device
         #if self.n_convs>1:
-        return convolution.multiple_convs_kan_conv2d(x, self.convs,self.kernel_size[0],self.out_channels,self.stride,self.dilation,self.padding,self.device)
+        return multiple_convs_kan_conv2d(x, self.convs,self.kernel_size[0],self.out_channels,self.stride,self.dilation,self.padding,self.device)
         
         # If there is only one convolution, apply it
         #return self.convs[0].forward(x)
@@ -134,7 +134,7 @@ class KAN_Convolution(torch.nn.Module):
 
     def forward(self, x: torch.Tensor):
         self.device = x.device
-        return convolution.kan_conv2d(x, self.conv,self.kernel_size[0],self.stride,self.dilation,self.padding,self.device)
+        return kan_conv2d(x, self.conv,self.kernel_size[0],self.stride,self.dilation,self.padding,self.device)
     
     def regularization_loss(self, regularize_activation=1.0, regularize_entropy=1.0):
         return sum( layer.regularization_loss(regularize_activation, regularize_entropy) for layer in self.layers)
