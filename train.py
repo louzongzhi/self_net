@@ -164,17 +164,13 @@ def train_model(
                             if not (torch.isinf(value.grad) | torch.isnan(value.grad)).any():
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
-                        dice_score, accuracy_scores, iou_scores, pixel_accuracies, f1_scores = evaluate(model, val_loader, device, amp)
-                        val_score = iou_scores
+                        iou_class0, iou_class1, iou_class2, iou_class3, miou, fps, model_parameters = evaluate(model, val_loader, device, amp)
+                        val_score = (iou_class1 + iou_class2 + iou_class3) / 3
                         scheduler.step(val_score)
                         try:
                             experiment.log({
                                 'learning rate': optimizer.param_groups[0]['lr'],
-                                'validation Dice': dice_score,
-                                'accuracy': accuracy_scores,
-                                'iou': iou_scores,
-                                'pixel_accuracy': pixel_accuracies,
-                                'f1': f1_scores,
+                                'validation score': val_score,
                                 'images': wandb.Image(images[0].cpu()),
                                 'masks': {
                                     'true': wandb.Image(true_masks[0].float().cpu()),
@@ -188,10 +184,10 @@ def train_model(
                             file_path = os.path.join(dir_checkpoint, 'runs.csv')
                             if not os.path.exists(file_path):
                                 with open(file_path, 'w') as f:
-                                    f.write("epoch,dice_score,accuracy_scores,iou_scores,pixel_accuracies,f1_scores\n")
+                                    f.write("epoch,iou_class1,iou_class2,iou_class3,miou\n")
 
                             with open(file_path, 'a') as f:
-                                f.write(f"{epoch},{dice_score},{accuracy_scores},{iou_scores},{pixel_accuracies},{f1_scores}\n")
+                                f.write(f"{epoch},{iou_class1},{iou_class2},{iou_class3},{miou}\n")
 
                         except:
                             pass
