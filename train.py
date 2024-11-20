@@ -208,7 +208,7 @@ def train_model(
             if val_score > best_score:
                 best_score = val_score
                 torch.save(model.state_dict(), f'{dir_checkpoint_best}/model.pth')
-                logging.info(f'miou_score:\t{val_score}\nBest\tcheckpoint\t{epoch}\tsaved!\n')
+                logging.info(f'\nmiou:\t{val_score}\nBest\tcheckpoint\t{epoch}\tsaved!\n')
             logging.info(f'Checkpoint {epoch} saved!')
 
 
