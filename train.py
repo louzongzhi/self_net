@@ -14,6 +14,7 @@ from evaluate import evaluate
 from models import load_model
 from data_loading import BasicDataset, CarvanaDataset
 from dice_score import dice_loss
+from lovasz_losses import lovasz_hinge, lovasz_softmax
 
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -127,14 +128,10 @@ def train_model(
                     masks_pred = model(images)
                     if model.n_classes == 1:
                         loss = criterion(masks_pred.squeeze(1), true_masks.float())
-                        loss += dice_loss(F.sigmoid(masks_pred.squeeze(1)), true_masks.float(), multiclass=False)
+                        loss += lovasz_hinge(masks_pred.squeeze(1), true_masks.float())
                     else:
                         loss = criterion(masks_pred, true_masks)
-                        loss += dice_loss(
-                            F.softmax(masks_pred, dim=1).float(),
-                            F.one_hot(true_masks, model.n_classes).permute(0, 3, 1, 2).float(),
-                            multiclass=True
-                        )
+                        loss += lovasz_softmax(F.softmax(masks_pred, dim=1), true_masks, classes='present')
 
                 optimizer.zero_grad(set_to_none=True)
                 grad_scaler.scale(loss).backward()
