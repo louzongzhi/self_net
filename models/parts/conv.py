@@ -19,7 +19,7 @@ class DepthwiseSeparableConv(nn.Module):
 class InceptionDWConv2d(nn.Module):
     def __init__(self, in_channels, square_kernel_size=3, band_kernel_size=11, branch_ratio=0.125):
         super(InceptionDWConv2d, self).__init__()
-        self.branch_channels = max(1, int(in_channels * branch_ratio))  # 确保分支通道数至少为1
+        self.branch_channels = max(1, int(in_channels * branch_ratio))
         self.square_kernel_size = square_kernel_size
         self.band_kernel_size = band_kernel_size
         self.dwconv_hw = DepthwiseSeparableConv(self.branch_channels, self.branch_channels,
