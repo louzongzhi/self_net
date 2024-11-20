@@ -167,6 +167,12 @@ def train_model(
                         iou_class0, iou_class1, iou_class2, iou_class3, miou, fps, model_parameters = evaluate(model, val_loader, device, amp)
                         val_score = miou
                         scheduler.step(val_score)
+
+                        if epoch == 1:
+                            print(f"\nfps:\t{fps}\nparameters:\t{model_parameters}\n")
+                        else:
+                            pass
+
                         try:
                             experiment.log({
                                 'learning rate': optimizer.param_groups[0]['lr'],
@@ -187,7 +193,7 @@ def train_model(
                                     f.write("epoch,iou_class1,iou_class2,iou_class3,miou\n")
 
                             with open(file_path, 'a') as f:
-                                f.write(f"{epoch},{iou_class1},{iou_class2},{iou_class3},{miou}\n")
+                                f.write(f"{epoch},{iou_class0},{iou_class1},{iou_class2},{iou_class3},{miou}\n")
 
                         except:
                             pass
