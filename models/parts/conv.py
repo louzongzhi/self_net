@@ -44,14 +44,24 @@ class ACConv2d(nn.Module):
         return (ac1 + ac2 + x) / 3
 
 
+class space_to_depth(nn.Module):
+    # Changing the dimension of the Tensor
+    def __init__(self, dimension=1):
+        super().__init__()
+        self.d = dimension
+
+    def forward(self, x):
+         return torch.cat([x[..., ::2, ::2], x[..., 1::2, ::2], x[..., ::2, 1::2], x[..., 1::2, 1::2]], 1)
+#         size_tensor = x.size()
+#         return torch.cat([x[...,0:size_tensor[2]//2,0:size_tensor[3]//2],
+#                          x[...,0:size_tensor[2]//2,size_tensor[3]//2:],
+#                          x[...,size_tensor[2]//2:,0:size_tensor[3]//2],
+#                          x[...,size_tensor[2]//2:,size_tensor[3]//2:]  ],1)
+
+
 if __name__ == '__main__':
-    # 测试代码
     model = ACConv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=True)
-
-    # 模拟输入
     input = torch.randn(1, 3, 32, 32)
-
-    # 前向传播
     output = model(input)
-
-    print(output.shape)
+    output = space_to_depth()(output)
+    print(f'{output.shape}\n{sum(p.numel() for p in model.parameters() if p.requires_grad)/1e6}\tM')

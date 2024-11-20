@@ -1,7 +1,7 @@
 from .model import self_net
-from .unet import UNet
-from .unetplusplus import UNetplusplus
-from .unet3plus import UNet3plus
+from .baseline.unet import UNet
+from .baseline.unetplusplus import UNetplusplus
+from .baseline.unet3plus import UNet3plus
 
 __all__ = [
     "self_net",
