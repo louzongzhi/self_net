@@ -24,12 +24,10 @@ def evaluate(net, dataloader, device, amp):
             mask_pred = F.one_hot(mask_pred.argmax(dim=1), net.n_classes).permute(0, 3, 1, 2).float()
             mask_true = F.one_hot(mask_true, net.n_classes).permute(0, 3, 1, 2).float()
 
-            # Calculate confusion matrix
             conf_matrix += torch.einsum('bcwh,dcwh->bd', mask_pred, mask_true)
             total_correct_class_pixels += torch.einsum('bcwh->c', mask_pred * mask_true)
             total_class_pixels += torch.einsum('bcwh->c', mask_true)
 
-    # Calculate IoU, PA, CPA, MPA, Accuracy, Precision, Recall, and F1-Score
     iou_scores = []
     pa = 0
     cpa_scores = []

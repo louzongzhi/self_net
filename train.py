@@ -164,12 +164,24 @@ def train_model(
                             if not (torch.isinf(value.grad) | torch.isnan(value.grad)).any():
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
-                        iou_class0, iou_class1, iou_class2, iou_class3, miou, fps, model_parameters = evaluate(model, val_loader, device, amp)
+                        # 修改后的代码
+                        results = evaluate(model, val_loader, device, amp)
+                        iou_scores = results['IoU']
+                        miou = results['MIoU']
+                        pa = results['PA']
+                        cpa_scores = results['CPA']
+                        mpa = results['MPA']
+                        accuracy = results['Accuracy']
+                        precision = results['Precision']
+                        recall = results['Recall']
+                        f1_score = results['F1-Score']
+
+                        iou_class0, iou_class1, iou_class2, iou_class3 = iou_scores[:4]  # 假设有4个类别
                         val_score = miou
                         scheduler.step(val_score)
 
                         if epoch == 1:
-                            print(f"\nfps:\t{fps}\nparameters:\t{model_parameters}\n")
+                            print(f"\nParameters:\t{sum(p.numel() for p in model.parameters() if p.requires_grad)/1e6}\tM\n")  # fps 和 model_parameters 需要被定义
                         else:
                             pass
 
@@ -190,13 +202,13 @@ def train_model(
                             file_path = os.path.join(dir_checkpoint, 'runs.csv')
                             if not os.path.exists(file_path):
                                 with open(file_path, 'w') as f:
-                                    f.write("epoch,iou_class1,iou_class2,iou_class3,miou\n")
+                                    f.write("epoch,iou_class0,iou_class1,iou_class2,iou_class3,miou,pa,cpa,mpa,accuracy,precision,recall,f1_score\n")
 
                             with open(file_path, 'a') as f:
-                                f.write(f"{epoch},{iou_class0},{iou_class1},{iou_class2},{iou_class3},{miou}\n")
+                                f.write(f"{epoch},{iou_class0},{iou_class1},{iou_class2},{iou_class3},{miou},{pa},{cpa_scores},{mpa},{accuracy},{precision},{recall},{f1_score}\n")
+                        except NameError as e:
+                            print(f"An error occurred: {e}")
 
-                        except:
-                            pass
 
         if save_checkpoint:
             Path(dir_checkpoint).mkdir(parents=True, exist_ok=True)
