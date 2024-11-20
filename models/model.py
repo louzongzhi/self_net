@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from parts.conv import ACConv2d, space_to_depth
+from parts.conv import ACConv2d
 
 
 class DoubleConv(nn.Module):
@@ -11,11 +11,9 @@ class DoubleConv(nn.Module):
             mid_channels = out_channels
         self.double_conv = nn.Sequential(
             ACConv2d(in_channels=in_channels, out_channels=mid_channels, kernel_size=3, padding=1, bias=False),
-            space_to_depth(),
             nn.BatchNorm2d(mid_channels),
             nn.ReLU(inplace=True),
             ACConv2d(in_channels=mid_channels, out_channels=out_channels, kernel_size=3, padding=1, bias=False),
-            space_to_depth(),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
         )
@@ -73,7 +71,7 @@ class self_net(nn.Module):
         self.n_classes = n_classes
         self.bilinear = bilinear
         self.deep_supervision = deep_supervision
-        channels = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
+        channels = [32, 64, 128, 256, 512]
 
         self.inc = (DoubleConv(n_channels, channels[0]))
 
@@ -82,25 +80,11 @@ class self_net(nn.Module):
         self.down3 = (Down(channels[2], channels[3]))
         factor = 2 if bilinear else 1
         self.down4 = (Down(channels[3], channels[4] // factor))
-        self.down5 = (Down(channels[4], channels[5] // factor))
-        self.down6 = (Down(channels[5], channels[6] // factor))
-        self.down7 = (Down(channels[6], channels[7] // factor))
-        self.down8 = (Down(channels[7], channels[8] // factor))
-        self.down9 = (Down(channels[8], channels[9] // factor))
-        self.down10 = (Down(channels[9], channels[10] // factor))
-        self.down11 = (Down(channels[10], channels[11] // factor))
 
-        self.up1 = (Up(channels[11], channels[10] // factor, bilinear))
-        self.up2 = (Up(channels[10], channels[9] // factor, bilinear))
-        self.up3 = (Up(channels[9], channels[8] // factor, bilinear))
-        self.up4 = (Up(channels[8], channels[7] // factor, bilinear))
-        self.up5 = (Up(channels[7], channels[6] // factor, bilinear))
-        self.up6 = (Up(channels[6], channels[5] // factor, bilinear))
-        self.up7 = (Up(channels[5], channels[4] // factor, bilinear))
-        self.up8 = (Up(channels[4], channels[3] // factor, bilinear))
-        self.up9 = (Up(channels[3], channels[2] // factor, bilinear))
-        self.up10 = (Up(channels[2], channels[1] // factor, bilinear))
-        self.up11 = (Up(channels[1], channels[0] // factor, bilinear))
+        self.up1 = (Up(channels[4], channels[3] // factor, bilinear))
+        self.up2 = (Up(channels[3], channels[2] // factor, bilinear))
+        self.up3 = (Up(channels[2], channels[1] // factor, bilinear))
+        self.up4 = (Up(channels[1], channels[0] // factor, bilinear))
 
         self.outc = OutConv(channels[0] // factor, n_classes)
 
@@ -110,25 +94,11 @@ class self_net(nn.Module):
         x_2 = self.down2(x_1)
         x_3 = self.down3(x_2)
         x_4 = self.down4(x_3)
-        x_5 = self.down5(x_4)
-        x_6 = self.down6(x_5)
-        x_7 = self.down7(x_6)
-        x_8 = self.down8(x_7)
-        x_9 = self.down9(x_8)
-        x_10 = self.down10(x_9)
-        x_11 = self.down11(x_10)
 
-        x = self.up1(x_11, x_10)
-        x = self.up2(x, x_9)
-        x = self.up3(x, x_8)
-        x = self.up4(x, x_7)
-        x = self.up5(x, x_6)
-        x = self.up6(x, x_5)
-        x = self.up7(x, x_4)
-        x = self.up8(x, x_3)
-        x = self.up9(x, x_2)
-        x = self.up10(x, x_1)
-        x = self.up11(x, x_0)
+        x = self.up1(x_4, x_3)
+        x = self.up2(x, x_2)
+        x = self.up3(x, x_1)
+        x = self.up4(x, x_0)
 
         logits = self.outc(x)
         return logits
@@ -136,4 +106,7 @@ class self_net(nn.Module):
 
 if __name__ == '__main__':
     model = self_net(3, 4, bilinear=False)
+    input = torch.rand(1, 3, 200, 200)
+    output = model(input)
+    print(output.shape)
     print(f'{sum(p.numel() for p in model.parameters() if p.requires_grad)/1e6}\tM')
