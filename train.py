@@ -11,7 +11,6 @@ from pathlib import Path
 from torch import optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-
 from evaluate import evaluate
 from models import load_model
 from data_loading import BasicDataset, CarvanaDataset
@@ -27,10 +26,10 @@ warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 
-dir_img = Path('NEU_Seg/images')
+dir_img = Path('./NEU_Seg/images')
 dir_img_train = os.path.join(dir_img, 'training')
 dir_img_val = os.path.join(dir_img, 'test')
-dir_mask = Path('NEU_Seg/annotations')
+dir_mask = Path('./NEU_Seg/annotations')
 dir_mask_train = os.path.join(dir_mask, 'training')
 dir_mask_val = os.path.join(dir_mask, 'test')
 dir_checkpoint = Path('./checkpoints/')
