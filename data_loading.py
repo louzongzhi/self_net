@@ -20,7 +20,7 @@ def load_image(filename):
     elif ext in ['.pt', '.pth']:
         return Image.fromarray(torch.load(filename).numpy())
     else:
-        return Image.open(filename)
+        return Image.open(filename).convert('L')
 
 
 def unique_mask_values(idx, mask_dir, mask_suffix):
