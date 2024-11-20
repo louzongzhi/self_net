@@ -61,7 +61,7 @@ class space_to_depth(nn.Module):
 
 if __name__ == '__main__':
     model = ACConv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=True)
-    input = torch.randn(1, 3, 32, 32)
+    input = torch.randn(32, 3, 200, 200)
     output = model(input)
     output = space_to_depth()(output)
     print(f'{output.shape}\n{sum(p.numel() for p in model.parameters() if p.requires_grad)/1e6}\tM')

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from.parts.conv import ACConv2d
+from.parts.conv import ACConv2d, space_to_depth
 
 
 class DoubleConv(nn.Module):
@@ -11,9 +11,11 @@ class DoubleConv(nn.Module):
             mid_channels = out_channels
         self.double_conv = nn.Sequential(
             ACConv2d(in_channels=in_channels, out_channels=mid_channels, kernel_size=3, padding=1, bias=False),
+            space_to_depth(),
             nn.BatchNorm2d(mid_channels),
             nn.ReLU(inplace=True),
             ACConv2d(in_channels=mid_channels, out_channels=out_channels, kernel_size=3, padding=1, bias=False),
+            space_to_depth(),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
         )
