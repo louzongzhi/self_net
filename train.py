@@ -164,12 +164,11 @@ def train_model(
                             if not (torch.isinf(value.grad) | torch.isnan(value.grad)).any():
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
-                        # 修改后的代码
                         results = evaluate(model, val_loader, device, amp)
                         iou_scores = results['IoU']
                         miou = results['MIoU']
 
-                        iou_class0, iou_class1, iou_class2, iou_class3 = iou_scores[:4]  # 假设有4个类别
+                        iou_class0, iou_class1, iou_class2, iou_class3 = iou_scores[:4]
                         val_score = miou
                         scheduler.step(val_score)
 

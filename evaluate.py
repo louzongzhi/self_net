@@ -15,8 +15,8 @@ def evaluate(net, dataloader, device, amp):
             mask_true = mask_true.to(device=device, dtype=torch.long)
 
             mask_pred = net(image)
-            mask_pred = F.one_hot(mask_pred.argmax(dim=1), net.n_classes).permute(0, 3, 1, 2).float()
-            mask_true = F.one_hot(mask_true, net.n_classes).permute(0, 3, 1, 2).float()
+            mask_pred = F.one_hot(mask_pred.argmax(dim=1), num_classes=net.n_classes).permute(0, 3, 1, 2).float()
+            mask_true = F.one_hot(mask_true, num_classes=net.n_classes).permute(0, 3, 1, 2).float()
 
             conf_matrix += torch.einsum('bcwh,dcwh->bd', mask_pred, mask_true)
 
