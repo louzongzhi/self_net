@@ -4,7 +4,6 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch_directml
 import wandb
 import warnings
 from pathlib import Path
@@ -54,7 +53,6 @@ def train_model(
         img_scale: float = 0.5,
         amp: bool = False,
         weight_decay: float = 1e-8,
-        momentum: float = 0.999,
         gradient_clipping: float = 1.0,
 ):
     try:
@@ -169,11 +167,6 @@ def train_model(
                         dice_score, accuracy_scores, iou_scores, pixel_accuracies, f1_scores = evaluate(model, val_loader, device, amp)
                         val_score = iou_scores
                         scheduler.step(val_score)
-
-                        logging.info('Validation score: {}'.format(val_score))
-                        logging.info('Validation accuracy: {}'.format(accuracy_scores))
-                        logging.info('Validation pixel accuracy: {}'.format(pixel_accuracies))
-                        logging.info('Validation F1 score: {}'.format(f1_scores))
                         try:
                             experiment.log({
                                 'learning rate': optimizer.param_groups[0]['lr'],
@@ -235,6 +228,7 @@ if __name__ == '__main__':
             device = torch.device('cuda')
             logging.info(f'Using GPU {torch.cuda.get_device_name(0)}')
         else:
+            import torch_directml
             device = torch_directml.device()
             logging.info(f'Using DirectML')
     except Exception as e:
