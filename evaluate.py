@@ -60,7 +60,7 @@ def evaluate(net, dataloader, device, amp):
 
     pa = total_correct_pixels / total_pixels
     mpa = sum(cpa_scores) / net.n_classes
-    miou = sum([iou for iou in iou_scores if not torch.isnan(iou)]) / len([iou for iou in iou_scores if not torch.isnan(iou)])
+    miou = sum([iou for iou in iou_scores[1:] if not torch.isnan(iou)]) / len([iou for iou in iou_scores[1:] if not torch.isnan(iou)])
     accuracy = conf_matrix.trace() / conf_matrix.sum()
     precision = sum(precision_scores) / net.n_classes
     recall = sum(recall_scores) / net.n_classes
