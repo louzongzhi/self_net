@@ -198,14 +198,16 @@ def train_model(
 
         if save_checkpoint:
             Path(dir_checkpoint).mkdir(parents=True, exist_ok=True)
-            torch.save(model.state_dict(), f'{dir_checkpoint_history}/checkpoint_{epoch}.pth')
+            state_dict = model.state_dict()
+            state_dict['mask_values'] = dataset_train.mask_values
+            torch.save(state_dict, f'{dir_checkpoint_history}/checkpoint_{epoch}.pth')
             logging.info(f'Checkpoint {epoch} saved!')
 
         best_epoch = 0
         if val_score > best_score:
             best_epoch = epoch
             best_score = val_score
-            torch.save(model.state_dict(), f'{dir_checkpoint_best}/model.pth')
+            torch.save(state_dict, f'{dir_checkpoint_best}/model.pth')
             logging.info(f'\nmiou:\t{val_score}\nBest\tcheckpoint\t{epoch}\tsaved!\n')
 
         if epoch - best_epoch > 10:
