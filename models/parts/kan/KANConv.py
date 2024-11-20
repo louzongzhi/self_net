@@ -1,9 +1,9 @@
 import torch
 import math
 import sys
-sys.path.append('models/parts/')
-from models.parts.KANLinear import KANLinear
-import models.parts.convolution as convolution
+sys.path.append('models/parts/kan/')
+from models.parts.kan.KANLinear import KANLinear
+import models.parts.kan.convolution as convolution
 
 
 #Script que contiene la implementación del kernel con funciones de activación.
