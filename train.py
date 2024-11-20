@@ -185,7 +185,7 @@ def train_model(
                                 **histograms
                             })
 
-                            file_path = dir_checkpoint / 'runs.csv'
+                            file_path = os.path.join(dir_checkpoint, 'runs.csv')
                             if not os.path.exists(file_path):
                                 with open(file_path, 'w') as f:
                                     f.write("epoch,dice_score,accuracy_scores,iou_scores,pixel_accuracies,f1_scores\n")
@@ -198,15 +198,20 @@ def train_model(
         if save_checkpoint:
             Path(dir_checkpoint).mkdir(parents=True, exist_ok=True)
             torch.save(model.state_dict(), f'{dir_checkpoint_history}/checkpoint_{epoch}.pth')
-            if val_score > best_score:
-                best_score = val_score
-                torch.save(model.state_dict(), f'{dir_checkpoint_best}/model.pth')
-                logging.info(f'\nmiou:\t{val_score}\nBest\tcheckpoint\t{epoch}\tsaved!\n')
             logging.info(f'Checkpoint {epoch} saved!')
+
+        best_epoch = 0
+        if val_score > best_score:
+            best_epoch = epoch
+            best_score = val_score
+            torch.save(model.state_dict(), f'{dir_checkpoint_best}/model.pth')
+            logging.info(f'\nmiou:\t{val_score}\nBest\tcheckpoint\t{epoch}\tsaved!\n')
+        if epoch - best_epoch > 10:
+            break
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description='Train the UNet on images and target masks')
+    parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', '-e', metavar='E', type=int, default=200, help='Number of epochs')
     parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=32, help='Batch size')
     parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=1e-4, help='Learning rate', dest='lr')
