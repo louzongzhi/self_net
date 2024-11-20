@@ -161,7 +161,7 @@ def train_model(
                             if not (torch.isinf(value.grad) | torch.isnan(value.grad)).any():
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
-                        iou_class1, iou_class2, iou_class3, miou = evaluate(model, val_loader, device, amp)
+                        iou_class1, iou_class2, iou_class3, miou, fps, params = evaluate(model, val_loader, device, amp)
                         val_score = miou
                         scheduler.step(val_score)
 
@@ -202,7 +202,6 @@ def train_model(
             torch.save(state_dict, f'{dir_checkpoint_history}/checkpoint_{epoch}.pth')
             logging.info(f'Checkpoint {epoch} saved!')
 
-        best_epoch = 0
         if val_score > best_score:
             best_score = val_score
             torch.save(state_dict, f'{dir_checkpoint_best}/model.pth')
