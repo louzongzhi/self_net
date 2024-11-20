@@ -165,7 +165,7 @@ def train_model(
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
                         iou_class0, iou_class1, iou_class2, iou_class3, miou, fps, model_parameters = evaluate(model, val_loader, device, amp)
-                        val_score = (iou_class1 + iou_class2 + iou_class3) / 3
+                        val_score = miou
                         scheduler.step(val_score)
                         try:
                             experiment.log({
