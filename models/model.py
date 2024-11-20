@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from parts.conv import ACConv2d
+from .parts.conv import ACConv2d
 
 
 class DoubleConv(nn.Module):
