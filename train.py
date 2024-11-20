@@ -164,11 +164,7 @@ def train_model(
                             if not (torch.isinf(value.grad) | torch.isnan(value.grad)).any():
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
-                        results = evaluate(model, val_loader, device, amp)
-                        iou_scores = results['IoU']
-                        miou = results['MIoU']
-
-                        iou_class0, iou_class1, iou_class2, iou_class3 = iou_scores[:4]
+                        iou_class1, iou_class2, iou_class3, miou = evaluate(model, val_loader, device, amp)
                         val_score = miou
                         scheduler.step(val_score)
 
@@ -194,10 +190,10 @@ def train_model(
                             file_path = os.path.join(dir_checkpoint, 'runs.csv')
                             if not os.path.exists(file_path):
                                 with open(file_path, 'w') as f:
-                                    f.write("epoch,iou_class0,iou_class1,iou_class2,iou_class3,miou\n")
+                                    f.write("epoch,iou_class1,iou_class2,iou_class3,miou\n")
 
                             with open(file_path, 'a') as f:
-                                f.write(f"{epoch},{iou_class0},{iou_class1},{iou_class2},{iou_class3},{miou}\n")
+                                f.write(f"{epoch},{iou_class1},{iou_class2},{iou_class3},{miou}\n")
                         except NameError as e:
                             print(f"An error occurred: {e}")
 
