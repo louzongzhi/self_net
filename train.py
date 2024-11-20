@@ -192,18 +192,13 @@ def train_model(
                                 **histograms
                             })
 
-                            # 指定文件路径
                             file_path = dir_checkpoint / 'runs.csv'
-
-                            # 检查文件是否存在
                             if not os.path.exists(file_path):
-                                # 文件不存在，则创建文件并写入标题行（可选）
                                 with open(file_path, 'w') as f:
                                     f.write("epoch,dice_score,accuracy_scores,iou_scores,pixel_accuracies,f1_scores\n")
-
-                            # 现在文件已经存在，可以追加内容
                             with open(file_path, 'a') as f:
                                 f.write(f"{epoch},{dice_score},{accuracy_scores},{iou_scores},{pixel_accuracies},{f1_scores}\n")
+
                         except:
                             pass
 
@@ -213,7 +208,7 @@ def train_model(
             if val_score > best_score:
                 best_score = val_score
                 torch.save(model.state_dict(), f'{dir_checkpoint_best}/model.pth')
-                logging.info(f'Best checkpoint {epoch} saved!')
+                logging.info(f'miou_score:\t{val_score}\nBest\tcheckpoint\t{epoch}\tsaved!\n')
             logging.info(f'Checkpoint {epoch} saved!')
 
 
