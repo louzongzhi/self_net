@@ -87,10 +87,7 @@ def train_model(
 
     optimizer = optim.Adam(
         model.parameters(),
-        lr=learning_rate,
-        weight_decay=weight_decay,
-        # momentum=momentum,
-        foreach=True
+        lr=learning_rate
     )
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)  # goal: maximize Dice score
     grad_scaler = torch.cuda.amp.GradScaler(enabled=amp)
