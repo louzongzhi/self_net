@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import wandb
-import warnings
 from pathlib import Path
 from torch import optim
 from torch.utils.data import DataLoader
@@ -13,17 +12,7 @@ from tqdm import tqdm
 from evaluate import evaluate
 from models import load_model
 from data_loading import BasicDataset, CarvanaDataset
-from dice_score import dice_loss
 from lovasz_losses import lovasz_hinge, lovasz_softmax
-
-warnings.filterwarnings("ignore", category=UserWarning)
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
-warnings.filterwarnings("ignore", category=RuntimeWarning)
-warnings.filterwarnings("ignore", category=ImportWarning)
-warnings.filterwarnings("ignore", category=SyntaxWarning)
-warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
-warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 
 dir_img = Path('./NEU_Seg/images')
